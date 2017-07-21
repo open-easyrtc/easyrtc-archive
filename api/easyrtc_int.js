@@ -3997,7 +3997,7 @@ var Easyrtc = function() {
             pc.createAnswer(setLocalAndSendMessage1,
                 function(message) {
                     self.showError(self.errCodes.INTERNAL_ERR, "create-answer: " + message);
-                    hangupBody(caller);
+                    self.hangup(caller);
                 },
                 receivedMediaConstraints);
         };
@@ -4263,8 +4263,13 @@ var Easyrtc = function() {
         }
     }
 
-    /** @private */
-    function hangupBody(otherUser) {
+    /**
+     * Hang up on a particular user or all users.
+     *  @param {String} otherUser - the easyrtcid of the person to hang up on.
+     *  @example
+     *     easyrtc.hangup(someEasyrtcid);
+     */
+    this.hangup = function(otherUser) {
         
         logDebug("Hanging up on " + otherUser);
         clearQueuedMessages(otherUser);
@@ -4292,19 +4297,6 @@ var Easyrtc = function() {
         }
     }
 
-    
-
-    /**
-     * Hang up on a particular user or all users.
-     *  @param {String} otherUser - the easyrtcid of the person to hang up on.
-     *  @example
-     *     easyrtc.hangup(someEasyrtcid);
-     */
-    this.hangup = function(otherUser) {
-        hangupBody(otherUser);
-        updateConfigurationInfo();
-    };
-
     /**
      * Hangs up on all current connections.
      * @example
@@ -4318,7 +4310,7 @@ var Easyrtc = function() {
                 continue;
             }
             sawAConnection = true;
-            hangupBody(otherUser);
+            self.hangup(otherUser);
         }
 
         if (sawAConnection) {
@@ -4455,7 +4447,7 @@ var Easyrtc = function() {
                pc.createAnswer(setLocalAndSendMessage1,
                     function(message) {
                         self.showError(self.errCodes.INTERNAL_ERR, "create-answer: " + message);
-                        hangupBody(easyrtcid);
+                        self.hangup(easyrtcid);
                     },
                     receivedMediaConstraints);
             };
