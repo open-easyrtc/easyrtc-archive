@@ -35,6 +35,6 @@
     "requirejs": "~2.1.16"
   },
   "resolutions": {
-    "webrtc-adapter": "^3.3.4"
+    "webrtc-adapter": "^4.2.1"
   }
 }
