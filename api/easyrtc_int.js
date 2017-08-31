@@ -3447,9 +3447,9 @@ var Easyrtc = function() {
     }
 
     /** @private */
-    function processCandicate(candicate) {
-        self._candicates = self._candicates || [];
-        self._candicates.push(parseCandidate(candicate));
+    function processCandidate(candidate) {
+        self._candidates = self._candidates || [];
+        self._candidates.push(parseCandidate(candidate));
     }
 
     function processAddedStream(otherUser, theStream) {
@@ -3670,7 +3670,7 @@ var Easyrtc = function() {
                     // The keyword "relay" in the candidate identifies it as referencing a
                     // turn server. The \d symbol in the regular expression matches a number.
                     //
-                    processCandicate(event.candidate.candidate);
+                    processCandidate(event.candidate.candidate);
 
                     if (peerConns[otherUser].connectionAccepted) {
                         sendSignalling(otherUser, "candidate", candidateData, null, function() {
@@ -4907,12 +4907,12 @@ var Easyrtc = function() {
             function iceAddSuccess() {
                 logDebug("iceAddSuccess: " +
                     JSON.stringify(candidate));
-                processCandicate(msgData.candidate);
+                processCandidate(msgData.candidate);
             }
 
             function iceAddFailure(domError) {
                 self.showError(self.errCodes.ICECANDIDATE_ERR, "bad ice candidate (" + domError.name + "): " +
-                    JSON.stringify(candidate));
+                    JSON.stringify(msgData));
             }
 
             pc.addIceCandidate(candidate, iceAddSuccess, iceAddFailure);
