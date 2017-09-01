@@ -4800,7 +4800,20 @@ var Easyrtc = function() {
      * @returns {Boolean} True getUserMedia is supported.
      */
     this.supportsGetUserMedia = function() {
-        return typeof navigator.getUserMedia !== 'undefined';
+        return typeof navigator.getUserMedia !== 'undefined' || 
+            (typeof navigator.mediaDevices   !== 'undefined' && typeof navigator.mediaDevices.getUserMedia !== 'undefined');
+    };
+
+    this.getUserMedia = function (mode, successCallback, errorCallback) {
+        if (this.supportsGetUserMedia()) {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                return navigator.mediaDevices.getUserMedia(mode).then(successCallback, errorCallback);
+            } else {
+                return navigator.getUserMedia(mode, successCallback, errorCallback);
+            }
+        } else {
+            errorCallback(self.errCodes.MEDIA_ERR, self.getConstantString("noWebrtcSupport"));
+        }
     };
 
     /**
@@ -6221,7 +6234,7 @@ var Easyrtc = function() {
             if (currentTime < firstCallTime + 1000) {
                 logDebug("Trying getUserMedia a second time");
                 try {
-                    navigator.getUserMedia(mode, onUserMediaSuccess, onUserMediaError);
+                    self.getUserMedia(mode, onUserMediaSuccess, onUserMediaError);
                 } catch (e) {
                     onUserMediaError(err);
                 }
@@ -6238,7 +6251,7 @@ var Easyrtc = function() {
         //
         try {
             firstCallTime = getCurrentTime();
-            navigator.getUserMedia(mode, onUserMediaSuccess, tryAgain);
+            self.getUserMedia(mode, onUserMediaSuccess, tryAgain);
         } catch (err) {
             tryAgain(err);
         }
