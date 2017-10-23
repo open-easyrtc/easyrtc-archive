@@ -3967,6 +3967,14 @@ var Easyrtc = function() {
             }
 
             var sendAnswer = function() {
+
+                //
+                // if we've discarded the peer connection, ignore the answer.
+                //
+                if (!peerConns[caller]) {
+                    return;
+                }
+
                 logDebug("sending answer");
 
                 function onSignalSuccess() {
@@ -4308,7 +4316,7 @@ var Easyrtc = function() {
                 });
             }
         }
-    }
+    };
 
     /**
      * Hangs up on all current connections.
@@ -4429,23 +4437,30 @@ var Easyrtc = function() {
 
             var setLocalAndSendMessage1 = function(sessionDescription) {
                 var sendAnswer = function() {
-                   logDebug("sending answer");
 
-                   function onSignalSuccess() {
+                    //
+                    // if we've discarded the peer connection, ignore the answer.
+                    //
+                    if (!peerConns[easyrtcid]) {
+                        return;
+                    }
+
+                    logDebug("sending answer");
+
+                    function onSignalSuccess() {
                         logDebug("sending answer succeeded");
+                    }
 
-                   }
-
-                   function onSignalFailure(errorCode, errorText) {
+                    function onSignalFailure(errorCode, errorText) {
                         logDebug("sending answer failed");
 
                        delete peerConns[easyrtcid];
                        self.showError(errorCode, errorText);
-                   }
+                    }
 
-                   self.sendPeerMessage(easyrtcid, "__gotAddedMediaStream", sessionDescription);
-                   peerConns[easyrtcid].connectionAccepted = true;
-                   sendQueuedCandidates(easyrtcid, onSignalSuccess, onSignalFailure);
+                    self.sendPeerMessage(easyrtcid, "__gotAddedMediaStream", sessionDescription);
+                    peerConns[easyrtcid].connectionAccepted = true;
+                    sendQueuedCandidates(easyrtcid, onSignalSuccess, onSignalFailure);
                };
 
                if (sdpLocalFilter) {
@@ -5025,6 +5040,7 @@ var Easyrtc = function() {
             if (!peerConns[caller]) {
                 return;
             }
+
             peerConns[caller].connectionAccepted = true;
 
 
