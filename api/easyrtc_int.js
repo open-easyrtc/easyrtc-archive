@@ -838,7 +838,20 @@ var Easyrtc = function() {
      * @returns {Boolean} True getUserMedia is supported.
      */
     this.supportsGetUserMedia = function() {
-        return typeof navigator.getUserMedia !== 'undefined';
+        return typeof navigator.getUserMedia !== 'undefined' || 
+            (typeof navigator.mediaDevices   !== 'undefined' && typeof navigator.mediaDevices.getUserMedia !== 'undefined');
+    };
+
+    this.getUserMedia = function (mode, successCallback, errorCallback) {
+        if (this.supportsGetUserMedia()) {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                return navigator.mediaDevices.getUserMedia(mode).then(successCallback, errorCallback);
+            } else {
+                return navigator.getUserMedia(mode, successCallback, errorCallback);
+            }
+        } else {
+            errorCallback(self.errCodes.MEDIA_ERR, self.getConstantString("noWebrtcSupport"));
+        }
     };
 
     /**
@@ -2259,7 +2272,7 @@ var Easyrtc = function() {
             if (currentTime < firstCallTime + 1000) {
                 logDebug("Trying getUserMedia a second time");
                 try {
-                    navigator.getUserMedia(mode, onUserMediaSuccess, onUserMediaError);
+                    self.getUserMedia(mode, onUserMediaSuccess, onUserMediaError);
                 } catch (e) {
                     onUserMediaError(err);
                 }
@@ -2276,7 +2289,7 @@ var Easyrtc = function() {
         //
         try {
             firstCallTime = getCurrentTime();
-            navigator.getUserMedia(mode, onUserMediaSuccess, tryAgain);
+            self.getUserMedia(mode, onUserMediaSuccess, tryAgain);
         } catch (err) {
             tryAgain(err);
         }
@@ -3954,6 +3967,14 @@ var Easyrtc = function() {
             }
 
             var sendAnswer = function() {
+
+                //
+                // if we've discarded the peer connection, ignore the answer.
+                //
+                if (!peerConns[caller]) {
+                    return;
+                }
+
                 logDebug("sending answer");
 
                 function onSignalSuccess() {
@@ -4295,7 +4316,7 @@ var Easyrtc = function() {
                 });
             }
         }
-    }
+    };
 
     /**
      * Hangs up on all current connections.
@@ -4416,23 +4437,30 @@ var Easyrtc = function() {
 
             var setLocalAndSendMessage1 = function(sessionDescription) {
                 var sendAnswer = function() {
-                   logDebug("sending answer");
 
-                   function onSignalSuccess() {
+                    //
+                    // if we've discarded the peer connection, ignore the answer.
+                    //
+                    if (!peerConns[easyrtcid]) {
+                        return;
+                    }
+
+                    logDebug("sending answer");
+
+                    function onSignalSuccess() {
                         logDebug("sending answer succeeded");
+                    }
 
-                   }
-
-                   function onSignalFailure(errorCode, errorText) {
+                    function onSignalFailure(errorCode, errorText) {
                         logDebug("sending answer failed");
 
                        delete peerConns[easyrtcid];
                        self.showError(errorCode, errorText);
-                   }
+                    }
 
-                   self.sendPeerMessage(easyrtcid, "__gotAddedMediaStream", sessionDescription);
-                   peerConns[easyrtcid].connectionAccepted = true;
-                   sendQueuedCandidates(easyrtcid, onSignalSuccess, onSignalFailure);
+                    self.sendPeerMessage(easyrtcid, "__gotAddedMediaStream", sessionDescription);
+                    peerConns[easyrtcid].connectionAccepted = true;
+                    sendQueuedCandidates(easyrtcid, onSignalSuccess, onSignalFailure);
                };
 
                if (sdpLocalFilter) {
@@ -5012,6 +5040,7 @@ var Easyrtc = function() {
             if (!peerConns[caller]) {
                 return;
             }
+
             peerConns[caller].connectionAccepted = true;
 
 
