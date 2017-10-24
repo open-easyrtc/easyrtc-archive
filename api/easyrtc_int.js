@@ -3838,6 +3838,10 @@ var Easyrtc = function() {
         function initOutGoingChannel(otherUser) {
             logDebug("saw initOutgoingChannel call");
 
+            if (!peerConns[otherUser]) {
+              return;
+            }
+
             var dataChannel = pc.createDataChannel(dataChannelName, self.getDatachannelConstraints());
             peerConns[otherUser].dataChannelS = dataChannel;
             peerConns[otherUser].dataChannelR = dataChannel;
@@ -3870,6 +3874,10 @@ var Easyrtc = function() {
             peerConns[otherUser].pc.ondatachannel = function(event) {
 
                 logDebug("saw incoming data channel");
+
+                if (!peerConns[otherUser]) {
+                  return;
+                }
 
                 var dataChannel = event.channel;
                 peerConns[otherUser].dataChannelR = dataChannel;
