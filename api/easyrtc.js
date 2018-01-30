@@ -5201,22 +5201,6 @@ var Easyrtc = function() {
             delete self._presetMediaConstraints;
             return constraints;
         }
-        else if (self._desiredVideoProperties.screenCapture) {
-            return {
-                video: {
-                    mandatory: {
-                        chromeMediaSource: 'screen',
-                        maxWidth: screen.width,
-                        maxHeight: screen.height,
-                        minWidth: screen.width,
-                        minHeight: screen.height,
-                        minFrameRate: 1,
-                        maxFrameRate: 5},
-                    optional: []
-                },
-                audio: false
-            };
-        }
         else if (!self.videoEnabled) {
             constraints.video = false;
         }
@@ -5283,18 +5267,10 @@ var Easyrtc = function() {
             constraints.audio = false;
         }
         else {
-            if (adapter && adapter.browserDetails && adapter.browserDetails.browser === "firefox") {
-                constraints.audio = {};
-                if (self._desiredAudioProperties.audioSrcId) {
-                    constraints.audio.deviceId = self._desiredAudioProperties.audioSrcId;
-                }
-            }
-            else { // chrome and opera
-                constraints.audio = {mandatory: {}, optional: []};
-                if (self._desiredAudioProperties.audioSrcId) {
-                    constraints.audio.optional = constraints.audio.optional || [];
-                    constraints.audio.optional.push({deviceId: self._desiredAudioProperties.audioSrcId});
-                }
+            constraints.audio = {};
+            if (self._desiredAudioProperties.audioSrcId) {
+            //    constraints.audio.deviceId = {exact: self._desiredAudioProperties.audioSrcId};
+                constraints.audio.deviceId = self._desiredAudioProperties.audioSrcId;
             }
         }
         return constraints;
